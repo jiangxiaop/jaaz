@@ -65,21 +65,12 @@ def get_default_provider(model_info_list: Optional[List[ModelInfo]] = None) -> s
 
     Args:
         model_info_list: List of model info dictionaries. If provided,
-                        will prioritize jaaz provider if available, otherwise use first one.
-                        If not provided, returns 'jaaz' as default.
+                        will use the first available one.
 
     Returns:
         str: Provider name
     """
     if model_info_list:
-        # Prioritize Jaaz provider if available
-        for model_info in model_info_list:
-            if model_info.get('provider') == 'jaaz':
-                return 'jaaz'
+        return model_info_list[0].get('provider', 'volces')
 
-        # If no jaaz provider, use the first available one
-        if model_info_list:
-            return model_info_list[0].get('provider', 'jaaz')
-
-    # Default fallback
-    return "jaaz"
+    return "volces"

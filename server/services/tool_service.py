@@ -4,30 +4,14 @@ from langchain_core.tools import BaseTool
 from models.tool_model import ToolInfo
 from tools.comfy_dynamic import build_tool
 from tools.write_plan import write_plan_tool
-from tools.generate_image_by_gpt_image_1_jaaz import generate_image_by_gpt_image_1_jaaz
-from tools.generate_image_by_imagen_4_jaaz import generate_image_by_imagen_4_jaaz
 from tools.generate_image_by_imagen_4_replicate import (
     generate_image_by_imagen_4_replicate,
-)
-from tools.generate_image_by_ideogram3_bal_jaaz import (
-    generate_image_by_ideogram3_bal_jaaz,
-)
-
-# from tools.generate_image_by_flux_1_1_pro import generate_image_by_flux_1_1_pro
-from tools.generate_image_by_flux_kontext_pro_jaaz import (
-    generate_image_by_flux_kontext_pro_jaaz,
 )
 from tools.generate_image_by_flux_kontext_pro_replicate import (
     generate_image_by_flux_kontext_pro_replicate,
 )
-from tools.generate_image_by_flux_kontext_max_jaaz import (
-    generate_image_by_flux_kontext_max,
-)
 from tools.generate_image_by_flux_kontext_max_replicate import (
     generate_image_by_flux_kontext_max_replicate,
-)
-from tools.generate_image_by_doubao_seedream_3_jaaz import (
-    generate_image_by_doubao_seedream_3_jaaz,
 )
 from tools.generate_image_by_doubao_seedream_3_volces import (
     generate_image_by_doubao_seedream_3_volces,
@@ -35,7 +19,6 @@ from tools.generate_image_by_doubao_seedream_3_volces import (
 from tools.generate_image_by_doubao_seededit_3_volces import (
     edit_image_by_doubao_seededit_3_volces,
 )
-from tools.generate_video_by_seedance_v1_jaaz import generate_video_by_seedance_v1_jaaz
 from tools.generate_video_by_seedance_v1_pro_volces import (
     generate_video_by_seedance_v1_pro_volces,
 )
@@ -43,72 +26,16 @@ from tools.generate_video_by_seedance_v1_lite_volces import (
     generate_video_by_seedance_v1_lite_t2v,
     generate_video_by_seedance_v1_lite_i2v,
 )
-from tools.generate_video_by_kling_v2_jaaz import generate_video_by_kling_v2_jaaz
-from tools.generate_image_by_recraft_v3_jaaz import generate_image_by_recraft_v3_jaaz
 from tools.generate_image_by_recraft_v3_replicate import (
     generate_image_by_recraft_v3_replicate,
 )
-from tools.generate_video_by_hailuo_02_jaaz import generate_video_by_hailuo_02_jaaz
-from tools.generate_video_by_veo3_fast_jaaz import generate_video_by_veo3_fast_jaaz
-from tools.generate_image_by_midjourney_jaaz import generate_image_by_midjourney_jaaz
 from services.config_service import config_service
 from services.db_service import db_service
 
 TOOL_MAPPING: Dict[str, ToolInfo] = {
-    "generate_image_by_gpt_image_1_jaaz": {
-        "display_name": "GPT Image 1",
-        "type": "image",
-        "provider": "jaaz",
-        "tool_function": generate_image_by_gpt_image_1_jaaz,
-    },
-    "generate_image_by_imagen_4_jaaz": {
-        "display_name": "Imagen 4",
-        "type": "image",
-        "provider": "jaaz",
-        "tool_function": generate_image_by_imagen_4_jaaz,
-    },
-    "generate_image_by_recraft_v3_jaaz": {
-        "display_name": "Recraft v3",
-        "type": "image",
-        "provider": "jaaz",
-        "tool_function": generate_image_by_recraft_v3_jaaz,
-    },
-    "generate_image_by_ideogram3_bal_jaaz": {
-        "display_name": "Ideogram 3 Balanced",
-        "type": "image",
-        "provider": "jaaz",
-        "tool_function": generate_image_by_ideogram3_bal_jaaz,
-    },
-    # "generate_image_by_flux_1_1_pro_jaaz": {
-    #     "display_name": "Flux 1.1 Pro",
-    #     "type": "image",
-    #     "provider": "jaaz",
-    #     "tool_function": generate_image_by_flux_1_1_pro,
-    # },
-    "generate_image_by_flux_kontext_pro_jaaz": {
-        "display_name": "Flux Kontext Pro",
-        "type": "image",
-        "provider": "jaaz",
-        "tool_function": generate_image_by_flux_kontext_pro_jaaz,
-    },
-    "generate_image_by_flux_kontext_max_jaaz": {
-        "display_name": "Flux Kontext Max",
-        "type": "image",
-        "provider": "jaaz",
-        "tool_function": generate_image_by_flux_kontext_max,
-    },
-    "generate_image_by_midjourney_jaaz": {
-        "display_name": "Midjourney",
-        "type": "image",
-        "provider": "jaaz",
-        "tool_function": generate_image_by_midjourney_jaaz,
-    },
-    "generate_image_by_doubao_seedream_3_jaaz": {
-        "display_name": "Doubao Seedream 3",
-        "type": "image",
-        "provider": "jaaz",
-        "tool_function": generate_image_by_doubao_seedream_3_jaaz,
-    },
+    # ---------------
+    # Volces Tools
+    # ---------------
     "generate_image_by_doubao_seedream_3_volces": {
         "display_name": "Doubao Seedream 3 by volces",
         "type": "image",
@@ -120,24 +47,6 @@ TOOL_MAPPING: Dict[str, ToolInfo] = {
         "type": "image",
         "provider": "volces",
         "tool_function": edit_image_by_doubao_seededit_3_volces,
-    },
-    "generate_video_by_seedance_v1_jaaz": {
-        "display_name": "Doubao Seedance v1",
-        "type": "video",
-        "provider": "jaaz",
-        "tool_function": generate_video_by_seedance_v1_jaaz,
-    },
-    "generate_video_by_hailuo_02_jaaz": {
-        "display_name": "Hailuo 02",
-        "type": "video",
-        "provider": "jaaz",
-        "tool_function": generate_video_by_hailuo_02_jaaz,
-    },
-    "generate_video_by_kling_v2_jaaz": {
-        "display_name": "Kling v2.1 Standard",
-        "type": "video",
-        "provider": "jaaz",
-        "tool_function": generate_video_by_kling_v2_jaaz,
     },
     "generate_video_by_seedance_v1_pro_volces": {
         "display_name": "Doubao Seedance v1 by volces",
@@ -156,12 +65,6 @@ TOOL_MAPPING: Dict[str, ToolInfo] = {
         "type": "video",
         "provider": "volces",
         "tool_function": generate_video_by_seedance_v1_lite_i2v,
-    },
-    "generate_video_by_veo3_fast_jaaz": {
-        "display_name": "Veo3 Fast",
-        "type": "video",
-        "provider": "jaaz",
-        "tool_function": generate_video_by_veo3_fast_jaaz,
     },
     # ---------------
     # Replicate Tools

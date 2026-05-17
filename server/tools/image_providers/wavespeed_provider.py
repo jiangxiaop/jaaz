@@ -24,7 +24,7 @@ class WavespeedProvider(ImageProviderBase):
         config = config_service.app_config.get('wavespeed', {})
         api_key = str(config.get("api_key", ""))
         api_url = str(config.get("url", ""))
-        channel = os.environ.get('WAVESPEED_CHANNEL', 'jaaz_main')
+        channel = os.environ.get('WAVESPEED_CHANNEL', 'default')
 
         if not api_key:
             raise ValueError("WaveSpeed API key is not configured")
