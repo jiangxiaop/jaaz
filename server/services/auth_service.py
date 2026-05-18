@@ -114,3 +114,15 @@ async def get_user_by_token(token: str) -> Optional[Dict[str, Any]]:
         "id": payload["sub"],
         "username": payload["username"],
     }
+
+
+def get_user_id_from_request(request) -> str:
+    """Extract user_id from request Authorization header. Returns '' if not authenticated."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return ""
+    token = auth_header[7:]
+    payload = decode_token(token)
+    if not payload:
+        return ""
+    return payload.get("sub", "")

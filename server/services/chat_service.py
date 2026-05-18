@@ -14,7 +14,7 @@ from services.stream_service import add_stream_task, remove_stream_task
 from models.config_model import ModelInfo
 
 
-async def handle_chat(data: Dict[str, Any]) -> None:
+async def handle_chat(data: Dict[str, Any], user_id: str = "") -> None:
     """
     Handle an incoming chat request.
 
@@ -51,7 +51,7 @@ async def handle_chat(data: Dict[str, Any]) -> None:
         # create new session
         prompt = messages[0].get('content', '')
         # TODO: Better way to determin when to create new chat session.
-        await db_service.create_chat_session(session_id, text_model.get('model'), text_model.get('provider'), canvas_id, (prompt[:200] if isinstance(prompt, str) else ''))
+        await db_service.create_chat_session(session_id, text_model.get('model'), text_model.get('provider'), canvas_id, (prompt[:200] if isinstance(prompt, str) else ''), user_id)
 
     await db_service.create_message(session_id, messages[-1].get('role', 'user'), json.dumps(messages[-1])) if len(messages) > 0 else None
 

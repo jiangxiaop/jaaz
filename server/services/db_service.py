@@ -43,34 +43,35 @@ class DatabaseService:
                 # Need to migrate
                 self._migration_manager.migrate(conn, current_version[0], CURRENT_VERSION)
 
-    async def create_canvas(self, id: str, name: str):
+    async def create_canvas(self, id: str, name: str, user_id: str = ""):
         """Create a new canvas"""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("""
-                INSERT INTO canvases (id, name)
-                VALUES (?, ?)
-            """, (id, name))
+                INSERT INTO canvases (id, name, user_id)
+                VALUES (?, ?, ?)
+            """, (id, name, user_id))
             await db.commit()
 
-    async def list_canvases(self) -> List[Dict[str, Any]]:
-        """Get all canvases"""
+    async def list_canvases(self, user_id: str = "") -> List[Dict[str, Any]]:
+        """Get all canvases for a user"""
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = sqlite3.Row
             cursor = await db.execute("""
                 SELECT id, name, description, thumbnail, created_at, updated_at
                 FROM canvases
+                WHERE user_id = ?
                 ORDER BY updated_at DESC
-            """)
+            """, (user_id,))
             rows = await cursor.fetchall()
             return [dict(row) for row in rows]
 
-    async def create_chat_session(self, id: str, model: str, provider: str, canvas_id: str, title: Optional[str] = None):
+    async def create_chat_session(self, id: str, model: str, provider: str, canvas_id: str, title: Optional[str] = None, user_id: str = ""):
         """Save a new chat session"""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("""
-                INSERT INTO chat_sessions (id, model, provider, canvas_id, title)
-                VALUES (?, ?, ?, ?, ?)
-            """, (id, model, provider, canvas_id, title))
+                INSERT INTO chat_sessions (id, model, provider, canvas_id, title, user_id)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (id, model, provider, canvas_id, title, user_id))
             await db.commit()
 
     async def create_message(self, session_id: str, role: str, message: str):
@@ -106,23 +107,24 @@ class DatabaseService:
                 
             return messages
 
-    async def list_sessions(self, canvas_id: str) -> List[Dict[str, Any]]:
-        """List all chat sessions"""
+    async def list_sessions(self, canvas_id: str, user_id: str = "") -> List[Dict[str, Any]]:
+        """List all chat sessions for a user"""
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = sqlite3.Row
             if canvas_id:
                 cursor = await db.execute("""
                     SELECT id, title, model, provider, created_at, updated_at
                     FROM chat_sessions
-                    WHERE canvas_id = ?
+                    WHERE canvas_id = ? AND user_id = ?
                     ORDER BY updated_at DESC
-                """, (canvas_id,))
+                """, (canvas_id, user_id))
             else:
                 cursor = await db.execute("""
                     SELECT id, title, model, provider, created_at, updated_at
                     FROM chat_sessions
+                    WHERE user_id = ?
                     ORDER BY updated_at DESC
-                """)
+                """, (user_id,))
             rows = await cursor.fetchall()
             return [dict(row) for row in rows]
 
@@ -136,18 +138,18 @@ class DatabaseService:
             """, (data, thumbnail, id))
             await db.commit()
 
-    async def get_canvas_data(self, id: str) -> Optional[Dict[str, Any]]:
+    async def get_canvas_data(self, id: str, user_id: str = "") -> Optional[Dict[str, Any]]:
         """Get canvas data"""
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = sqlite3.Row
             cursor = await db.execute("""
                 SELECT data, name
                 FROM canvases
-                WHERE id = ?
-            """, (id,))
+                WHERE id = ? AND user_id = ?
+            """, (id, user_id))
             row = await cursor.fetchone()
 
-            sessions = await self.list_sessions(id)
+            sessions = await self.list_sessions(id, user_id)
             
             if row:
                 return {
@@ -157,16 +159,16 @@ class DatabaseService:
                 }
             return None
 
-    async def delete_canvas(self, id: str):
+    async def delete_canvas(self, id: str, user_id: str = ""):
         """Delete canvas and related data"""
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute("DELETE FROM canvases WHERE id = ?", (id,))
+            await db.execute("DELETE FROM canvases WHERE id = ? AND user_id = ?", (id, user_id))
             await db.commit()
 
-    async def rename_canvas(self, id: str, name: str):
+    async def rename_canvas(self, id: str, name: str, user_id: str = ""):
         """Rename canvas"""
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute("UPDATE canvases SET name = ? WHERE id = ?", (name, id))
+            await db.execute("UPDATE canvases SET name = ? WHERE id = ? AND user_id = ?", (name, id, user_id))
             await db.commit()
 
     async def create_comfy_workflow(self, name: str, api_json: str, description: str, inputs: str, outputs: str = None):

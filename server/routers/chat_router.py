@@ -2,13 +2,15 @@
 from fastapi import APIRouter, Request
 from services.chat_service import handle_chat
 from services.stream_service import get_stream_task
+from services.auth_service import get_user_id_from_request
 
 router = APIRouter(prefix="/api")
 
 @router.post("/chat")
 async def chat(request: Request):
+    user_id = get_user_id_from_request(request)
     data = await request.json()
-    await handle_chat(data)
+    await handle_chat(data, user_id)
     return {"status": "done"}
 
 @router.post("/cancel/{session_id}")
