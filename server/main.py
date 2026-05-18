@@ -45,6 +45,17 @@ async def lifespan(app: FastAPI):
 print('Creating FastAPI app')
 app = FastAPI(lifespan=lifespan)
 
+# CORS
+from fastapi.middleware.cors import CORSMiddleware
+CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "*")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS.split(",") if CORS_ORIGINS != "*" else ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Include routers
 print('Including routers')
 app.include_router(config_router.router)
