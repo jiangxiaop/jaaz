@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, HTTPException
 from services.chat_service import handle_chat
 from services.db_service import db_service
 from services.auth_service import get_user_id_from_request
@@ -7,14 +7,22 @@ import json
 
 router = APIRouter(prefix="/api/canvas")
 
+
+def require_auth(request: Request) -> str:
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user_id
+
+
 @router.get("/list")
 async def list_canvases(request: Request):
-    user_id = get_user_id_from_request(request)
+    user_id = require_auth(request)
     return await db_service.list_canvases(user_id)
 
 @router.post("/create")
 async def create_canvas(request: Request):
-    user_id = get_user_id_from_request(request)
+    user_id = require_auth(request)
     data = await request.json()
     id = data.get('canvas_id')
     name = data.get('name')
@@ -25,7 +33,7 @@ async def create_canvas(request: Request):
 
 @router.get("/{id}")
 async def get_canvas(id: str, request: Request):
-    user_id = get_user_id_from_request(request)
+    user_id = require_auth(request)
     return await db_service.get_canvas_data(id, user_id)
 
 @router.post("/{id}/save")
@@ -37,7 +45,7 @@ async def save_canvas(id: str, request: Request):
 
 @router.post("/{id}/rename")
 async def rename_canvas(id: str, request: Request):
-    user_id = get_user_id_from_request(request)
+    user_id = require_auth(request)
     data = await request.json()
     name = data.get('name')
     await db_service.rename_canvas(id, name, user_id)
@@ -45,6 +53,6 @@ async def rename_canvas(id: str, request: Request):
 
 @router.delete("/{id}/delete")
 async def delete_canvas(id: str, request: Request):
-    user_id = get_user_id_from_request(request)
+    user_id = require_auth(request)
     await db_service.delete_canvas(id, user_id)
     return {"id": id }
