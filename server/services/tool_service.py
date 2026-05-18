@@ -29,10 +29,22 @@ from tools.generate_video_by_seedance_v1_lite_volces import (
 from tools.generate_image_by_recraft_v3_replicate import (
     generate_image_by_recraft_v3_replicate,
 )
+from tools.generate_image_by_gpt_image_1_openai import (
+    generate_image_by_gpt_image_1_openai,
+)
 from services.config_service import config_service
 from services.db_service import db_service
 
 TOOL_MAPPING: Dict[str, ToolInfo] = {
+    # ---------------
+    # OpenAI Tools
+    # ---------------
+    "generate_image_by_gpt_image_1_openai": {
+        "display_name": "GPT Image 1",
+        "type": "image",
+        "provider": "openai",
+        "tool_function": generate_image_by_gpt_image_1_openai,
+    },
     # ---------------
     # Volces Tools
     # ---------------
