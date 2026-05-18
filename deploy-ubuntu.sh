@@ -13,6 +13,7 @@ REPO_URL="https://github.com/jiangxiaop/jaaz.git"
 PYTHON_VERSION="3.12"
 NODE_VERSION="20"
 SERVER_PORT=57988
+PUBLIC_BASE_URL=""                # e.g. "https://aiapi.funblocks.app" (empty = http://localhost:PORT)
 BUILD_FRONTEND="no"              # "yes" to build and serve frontend from backend
 
 # API Keys (leave empty to skip)
@@ -238,6 +239,7 @@ Group=${APP_USER}
 WorkingDirectory=${INSTALL_DIR}/server
 Environment="PATH=${INSTALL_DIR}/venv/bin:/usr/bin:/bin"
 Environment="HOME=/home/${APP_USER}"
+Environment="PUBLIC_BASE_URL=${PUBLIC_BASE_URL}"
 ExecStart=${VENV_PYTHON} main.py --port ${SERVER_PORT}
 Restart=on-failure
 RestartSec=5
