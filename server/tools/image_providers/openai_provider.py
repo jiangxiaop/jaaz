@@ -26,14 +26,12 @@ class OpenAIImageProvider(ImageProviderBase):
             tuple[str, int, int, str]: (mime_type, width, height, filename)
         """
 
-        # Support provider override via kwargs (e.g. 'minimax' uses same OpenAI-compatible format)
-        provider_name = kwargs.get("provider_name", "openai")
-        config = config_service.app_config.get(provider_name, {})
+        config = config_service.app_config.get('openai', {})
         self.api_key = str(config.get("api_key", ""))
         self.base_url = str(config.get("url", ""))
 
         if not self.api_key:
-            raise ValueError(f"{provider_name} API key is not configured")
+            raise ValueError("OpenAI API key is not configured")
 
         # Create OpenAI client
         print(f'🖼️ OpenAI Image Provider - base_url: {self.base_url}, model: {model}')
