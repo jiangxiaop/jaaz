@@ -46,7 +46,10 @@ class MinimaxImageProvider(ImageProviderBase):
                 response.raise_for_status()
                 data = response.json()
 
-            image_base64_list = data.get("data", {}).get("image_base64", [])
+            print(f'🖼️ MiniMax API Response keys: {list(data.keys()) if isinstance(data, dict) else type(data)}')
+            inner_data = data.get("data") if isinstance(data, dict) else None
+            print(f'🖼️ MiniMax API data field: {type(inner_data)} - {str(inner_data)[:500] if inner_data else "None"}')
+            image_base64_list = (inner_data or {}).get("image_base64", [])
             if not image_base64_list:
                 raise Exception("No image data returned from MiniMax API")
 
