@@ -30,7 +30,7 @@ from tools.generate_image_by_recraft_v3_replicate import (
     generate_image_by_recraft_v3_replicate,
 )
 from tools.generate_image_by_gpt_image_1_openai import (
-    generate_image_by_gpt_image_1_openai,
+    generate_image_by_minimax,
 )
 from services.config_service import config_service
 from services.db_service import db_service
@@ -39,11 +39,11 @@ TOOL_MAPPING: Dict[str, ToolInfo] = {
     # ---------------
     # OpenAI Tools
     # ---------------
-    "generate_image_by_gpt_image_1_openai": {
-        "display_name": "GPT Image 1",
+    "generate_image_by_minimax": {
+        "display_name": "MiniMax Image-01",
         "type": "image",
-        "provider": "openai",
-        "tool_function": generate_image_by_gpt_image_1_openai,
+        "provider": "minimax",
+        "tool_function": generate_image_by_minimax,
     },
     # ---------------
     # Volces Tools
