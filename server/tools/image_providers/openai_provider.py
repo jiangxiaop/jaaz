@@ -34,11 +34,13 @@ class OpenAIImageProvider(ImageProviderBase):
             raise ValueError("OpenAI API key is not configured")
 
         # Create OpenAI client
+        print(f'🖼️ OpenAI Image Provider - base_url: {self.base_url}, model: {model}')
         self.client = OpenAI(api_key=self.api_key,
                              base_url=self.base_url or None)
         try:
             # Remove openai/ prefix if present
             model = model.replace('openai/', '')
+            print(f'🖼️ OpenAI Image Request - model: {model}, aspect_ratio: {aspect_ratio}, has_input_images: {bool(input_images)}')
 
             # Determine if this is an edit operation or generation
             if input_images and len(input_images) > 0:
@@ -105,6 +107,6 @@ class OpenAIImageProvider(ImageProviderBase):
             return mime_type, width, height, filename
 
         except Exception as e:
-            print('Error generating image with OpenAI:', e)
+            print(f'🖼️ OpenAI Image Error - base_url: {self.base_url}, model: {model}, error: {e}')
             traceback.print_exc()
             raise e
