@@ -37,7 +37,6 @@ class MinimaxImageProvider(ImageProviderBase):
             "model": model,
             "prompt": prompt,
             "aspect_ratio": aspect_ratio,
-            "response_format": "base64",
         }
 
         try:
@@ -46,17 +45,21 @@ class MinimaxImageProvider(ImageProviderBase):
                 response.raise_for_status()
                 data = response.json()
 
-            print(f'🖼️ MiniMax API Response keys: {list(data.keys()) if isinstance(data, dict) else type(data)}')
-            inner_data = data.get("data") if isinstance(data, dict) else None
-            print(f'🖼️ MiniMax API data field: {type(inner_data)} - {str(inner_data)[:500] if inner_data else "None"}')
-            image_base64_list = (inner_data or {}).get("image_base64", [])
-            if not image_base64_list:
+            # Check for API error
+            base_resp = data.get("base_resp", {})
+            if base_resp.get("status_code", 0) != 0:
+                raise Exception(f"MiniMax API error: {base_resp.get('status_msg', 'unknown')}")
+
+            inner_data = data.get("data") or {}
+            image_urls = inner_data.get("image_urls", [])
+            if not image_urls:
                 raise Exception("No image data returned from MiniMax API")
 
-            image_b64 = image_base64_list[0]
+            image_url = image_urls[0]
+            print(f'🖼️ MiniMax got image URL, downloading...')
             image_id = generate_image_id()
             mime_type, width, height, extension = await get_image_info_and_save(
-                image_b64, os.path.join(FILES_DIR, f'{image_id}'), is_b64=True
+                image_url, os.path.join(FILES_DIR, f'{image_id}')
             )
 
             if mime_type is None:
