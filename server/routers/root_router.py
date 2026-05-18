@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, HTTPException
 import requests
 import httpx
 from models.tool_model import ToolInfoJson
@@ -134,9 +134,15 @@ async def list_tools() -> list[ToolInfoJson]:
 async def list_chat_sessions(request: Request):
     from services.auth_service import get_user_id_from_request
     user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     return await db_service.list_sessions("", user_id)
 
 
 @router.get("/chat_session/{session_id}")
-async def get_chat_session(session_id: str):
+async def get_chat_session(session_id: str, request: Request):
+    from services.auth_service import get_user_id_from_request
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     return await db_service.get_chat_history(session_id)
