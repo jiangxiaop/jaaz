@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 import requests
 import httpx
 from models.tool_model import ToolInfoJson
@@ -131,8 +131,10 @@ async def list_tools() -> list[ToolInfoJson]:
 
 
 @router.get("/list_chat_sessions")
-async def list_chat_sessions():
-    return await db_service.list_sessions()
+async def list_chat_sessions(request: Request):
+    from services.auth_service import get_user_id_from_request
+    user_id = get_user_id_from_request(request)
+    return await db_service.list_sessions("", user_id)
 
 
 @router.get("/chat_session/{session_id}")
