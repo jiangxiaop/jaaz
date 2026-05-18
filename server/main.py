@@ -99,7 +99,39 @@ async def serve_react_app():
     return response
 
 print('Creating socketio app')
-socket_app = socketio.ASGIApp(sio, other_asgi_app=app, socketio_path='/socket.io')
+_socket_app = socketio.ASGIApp(sio, other_asgi_app=app, socketio_path='/socket.io')
+
+# Wrap socket_app with CORS headers so /api/file/ and other non-socketio
+# routes get proper CORS even when going through the socketio ASGI layer.
+class CORSWrapperASGI:
+    def __init__(self, app):
+        self.app = app
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            headers_to_add = [
+                (b"access-control-allow-origin", CORS_ORIGINS.encode() if CORS_ORIGINS != "*" else b"*"),
+                (b"access-control-allow-credentials", b"true"),
+                (b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS"),
+                (b"access-control-allow-headers", b"Content-Type, Authorization"),
+            ]
+            # Handle preflight
+            if scope.get("method") == "OPTIONS":
+                await send({"type": "http.response.start", "status": 204, "headers": headers_to_add})
+                await send({"type": "http.response.body", "body": b""})
+                return
+
+            async def send_with_cors(message):
+                if message["type"] == "http.response.start":
+                    existing = dict(message.get("headers", []))
+                    # Only add if not already set by FastAPI CORS middleware
+                    if b"access-control-allow-origin" not in existing:
+                        message["headers"] = list(message.get("headers", [])) + headers_to_add
+                await send(message)
+            await self.app(scope, receive, send_with_cors)
+        else:
+            await self.app(scope, receive, send)
+
+socket_app = CORSWrapperASGI(_socket_app)
 
 if __name__ == "__main__":
     # bypass localhost request for proxy, fix ollama proxy issue
