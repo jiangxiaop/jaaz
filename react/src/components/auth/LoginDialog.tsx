@@ -1,157 +1,113 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
-import { startDeviceAuth, pollDeviceAuth, saveAuthData } from '../../api/auth'
-import { updateJaazApiKey } from '../../api/config'
+import { login, register, saveAuthData } from '../../api/auth'
 import { useAuth } from '../../contexts/AuthContext'
 import { useConfigs, useRefreshModels } from '../../contexts/configs'
 
 export function LoginDialog() {
-  const [authMessage, setAuthMessage] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [message, setMessage] = useState('')
+  const [isRegister, setIsRegister] = useState(false)
+  const [loading, setLoading] = useState(false)
   const { refreshAuth } = useAuth()
   const { showLoginDialog: open, setShowLoginDialog } = useConfigs()
   const refreshModels = useRefreshModels()
   const { t } = useTranslation()
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Clean up polling when dialog closes
-  useEffect(() => {
-    setAuthMessage('')
-
-    if (!open) {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current)
-        pollingIntervalRef.current = null
-      }
-    }
-  }, [open])
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current)
-      }
-    }
-  }, [])
-
-  const startPolling = (code: string) => {
-    console.log('Starting polling for device code:', code)
-
-    const poll = async () => {
-      try {
-        const result = await pollDeviceAuth(code)
-        console.log('Poll result:', result)
-
-        if (result.status === 'authorized') {
-          // Login successful - save auth data to local storage
-          if (result.token && result.user_info) {
-            saveAuthData(result.token, result.user_info)
-
-            // Update jaaz provider api_key with the access token
-            await updateJaazApiKey(result.token)
-          }
-
-          setAuthMessage(t('common:auth.loginSuccessMessage'))
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current)
-            pollingIntervalRef.current = null
-          }
-
-          try {
-            await refreshAuth()
-            console.log('Auth status refreshed successfully')
-            // Refresh models list after successful login and config update
-            refreshModels()
-          } catch (error) {
-            console.error('Failed to refresh auth status:', error)
-          }
-
-          setTimeout(() => setShowLoginDialog(false), 1500)
-
-        } else if (result.status === 'expired') {
-          // Authorization expired
-          setAuthMessage(t('common:auth.authExpiredMessage'))
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current)
-            pollingIntervalRef.current = null
-          }
-
-        } else if (result.status === 'error') {
-          // Error occurred
-          setAuthMessage(result.message || t('common:auth.authErrorMessage'))
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current)
-            pollingIntervalRef.current = null
-          }
-
-        } else {
-          // Still pending, continue polling
-          setAuthMessage(t('common:auth.waitingForBrowser'))
-        }
-      } catch (error) {
-        console.error('Polling error:', error)
-        setAuthMessage(t('common:auth.pollErrorMessage'))
-        if (pollingIntervalRef.current) {
-          clearInterval(pollingIntervalRef.current)
-          pollingIntervalRef.current = null
-        }
-      }
-    }
-
-    // Start polling immediately, then every 1 seconds
-    poll()
-    pollingIntervalRef.current = setInterval(poll, 1000)
-  }
-
-  const handleLogin = async () => {
+  const handleSubmit = async () => {
+    setLoading(true)
+    setMessage('')
     try {
-      setAuthMessage(t('common:auth.preparingLoginMessage'))
+      const result = isRegister
+        ? await register(username, password)
+        : await login(username, password)
 
-      const result = await startDeviceAuth()
-      setAuthMessage(result.message)
-
-      // Start polling for authorization status
-      startPolling(result.code)
-
-    } catch (error) {
-      console.error('登录请求失败:', error)
-      setAuthMessage(t('common:auth.loginRequestFailed'))
+      if (result.status === 'success' && result.token && result.user_info) {
+        saveAuthData(result.token, result.user_info)
+        setMessage(t('common:auth.loginSuccessMessage'))
+        await refreshAuth()
+        refreshModels()
+        setTimeout(() => {
+          setShowLoginDialog(false)
+          setUsername('')
+          setPassword('')
+          setMessage('')
+        }, 1000)
+      } else {
+        setMessage(result.message || 'Failed')
+      }
+    } catch {
+      setMessage(t('common:auth.loginRequestFailed'))
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleCancel = () => {
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current)
-      pollingIntervalRef.current = null
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && username && password && !loading) {
+      handleSubmit()
     }
-    setAuthMessage('')
-    setShowLoginDialog(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={setShowLoginDialog}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('common:auth.loginToJaaz')}</DialogTitle>
+          <DialogTitle>
+            {isRegister ? t('common:auth.register') : t('common:auth.login')}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            {t('common:auth.loginDescription')}
-          </p>
+          <input
+            type="text"
+            placeholder={t('common:auth.username')}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+            autoFocus
+          />
+          <input
+            type="password"
+            placeholder={t('common:auth.password')}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+          />
 
-          <div className="flex gap-2">
-            <Button
-              onClick={handleLogin}
-              disabled={!!authMessage}
-              className="flex-1"
-            >
-              {authMessage || t('common:auth.startLogin')}
-            </Button>
+          {message && (
+            <p className="text-sm text-muted-foreground">{message}</p>
+          )}
 
-          </div>
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || !username || !password}
+            className="w-full"
+          >
+            {loading
+              ? '...'
+              : isRegister
+                ? t('common:auth.register')
+                : t('common:auth.login')}
+          </Button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsRegister(!isRegister)
+              setMessage('')
+            }}
+            className="w-full text-center text-sm text-muted-foreground hover:underline"
+          >
+            {isRegister
+              ? t('common:auth.hasAccount')
+              : t('common:auth.noAccount')}
+          </button>
         </div>
       </DialogContent>
     </Dialog>
