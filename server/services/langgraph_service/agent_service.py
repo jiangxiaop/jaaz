@@ -6,6 +6,7 @@ import traceback
 from utils.http_client import HttpClient
 from langgraph_swarm import create_swarm  # type: ignore
 from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from langchain_ollama import ChatOllama
 from services.websocket_service import send_to_websocket  # type: ignore
 from services.config_service import config_service
@@ -150,6 +151,19 @@ def _create_text_model(text_model: ModelInfo) -> Any:
         return ChatOllama(
             model=model,
             base_url=url,
+        )
+    elif provider == 'anthropic':
+        http_client = HttpClient.create_sync_client()
+        http_async_client = HttpClient.create_async_client()
+        return ChatAnthropic(
+            model=model,
+            api_key=api_key,  # type: ignore
+            base_url=url,
+            default_headers={"anthropic-version": "2023-06-01"},
+            timeout=300,
+            temperature=0,
+            http_client=http_client,
+            http_async_client=http_async_client,
         )
     else:
         # Create httpx client with SSL configuration for ChatOpenAI
