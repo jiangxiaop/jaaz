@@ -153,8 +153,6 @@ def _create_text_model(text_model: ModelInfo) -> Any:
             base_url=url,
         )
     elif provider == 'anthropic':
-        http_client = HttpClient.create_sync_client()
-        http_async_client = HttpClient.create_async_client()
         return ChatAnthropic(
             model=model,
             api_key=api_key,  # type: ignore
@@ -162,8 +160,6 @@ def _create_text_model(text_model: ModelInfo) -> Any:
             default_headers={"anthropic-version": "2023-06-01"},
             timeout=300,
             temperature=0,
-            http_client=http_client,
-            http_async_client=http_async_client,
         )
     else:
         # Create httpx client with SSL configuration for ChatOpenAI
