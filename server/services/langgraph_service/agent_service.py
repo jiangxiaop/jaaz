@@ -204,11 +204,6 @@ async def _handle_error(error: Exception, session_id: str) -> None:
             if len(body) > 2000:
                 body = body[:2000] + f"... [truncated, total {len(body)} chars]"
             print(f"🔴 Upstream request body: {body}")
-        # Log response body
-        try:
-            print(f"🔴 Upstream response body: {resp.text}")
-        except Exception:
-            pass
 
     tb_str = traceback.format_exc()
     print(f"Full traceback:\n{tb_str}")
