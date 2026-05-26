@@ -4,21 +4,6 @@ from langchain_core.tools import BaseTool
 from models.tool_model import ToolInfo
 from tools.comfy_dynamic import build_tool
 from tools.write_plan import write_plan_tool
-from tools.generate_image_by_imagen_4_replicate import (
-    generate_image_by_imagen_4_replicate,
-)
-from tools.generate_image_by_flux_kontext_pro_replicate import (
-    generate_image_by_flux_kontext_pro_replicate,
-)
-from tools.generate_image_by_flux_kontext_max_replicate import (
-    generate_image_by_flux_kontext_max_replicate,
-)
-from tools.generate_image_by_doubao_seedream_3_volces import (
-    generate_image_by_doubao_seedream_3_volces,
-)
-from tools.generate_image_by_doubao_seededit_3_volces import (
-    edit_image_by_doubao_seededit_3_volces,
-)
 from tools.generate_video_by_seedance_v1_pro_volces import (
     generate_video_by_seedance_v1_pro_volces,
 )
@@ -26,11 +11,8 @@ from tools.generate_video_by_seedance_v1_lite_volces import (
     generate_video_by_seedance_v1_lite_t2v,
     generate_video_by_seedance_v1_lite_i2v,
 )
-from tools.generate_image_by_recraft_v3_replicate import (
-    generate_image_by_recraft_v3_replicate,
-)
 from tools.generate_image_by_gpt_image_1_openai import (
-    generate_image_by_minimax,
+    generate_image_by_gpt_image_2,
 )
 from services.config_service import config_service
 from services.db_service import db_service
@@ -39,27 +21,15 @@ TOOL_MAPPING: Dict[str, ToolInfo] = {
     # ---------------
     # OpenAI Tools
     # ---------------
-    "generate_image_by_minimax": {
-        "display_name": "MiniMax Image-01",
+    "generate_image_by_gpt_image_2": {
+        "display_name": "GPT Image 2",
         "type": "image",
-        "provider": "minimax",
-        "tool_function": generate_image_by_minimax,
+        "provider": "openai",
+        "tool_function": generate_image_by_gpt_image_2,
     },
     # ---------------
     # Volces Tools
     # ---------------
-    "generate_image_by_doubao_seedream_3_volces": {
-        "display_name": "Doubao Seedream 3 by volces",
-        "type": "image",
-        "provider": "volces",
-        "tool_function": generate_image_by_doubao_seedream_3_volces,
-    },
-    "edit_image_by_doubao_seededit_3_volces": {
-        "display_name": "Doubao Seededit 3 by volces",
-        "type": "image",
-        "provider": "volces",
-        "tool_function": edit_image_by_doubao_seededit_3_volces,
-    },
     "generate_video_by_seedance_v1_pro_volces": {
         "display_name": "Doubao Seedance v1 by volces",
         "type": "video",
@@ -77,33 +47,6 @@ TOOL_MAPPING: Dict[str, ToolInfo] = {
         "type": "video",
         "provider": "volces",
         "tool_function": generate_video_by_seedance_v1_lite_i2v,
-    },
-    # ---------------
-    # Replicate Tools
-    # ---------------
-    "generate_image_by_imagen_4_replicate": {
-        "display_name": "Imagen 4",
-        "type": "image",
-        "provider": "replicate",
-        "tool_function": generate_image_by_imagen_4_replicate,
-    },
-    "generate_image_by_recraft_v3_replicate": {
-        "display_name": "Recraft v3",
-        "type": "image",
-        "provider": "replicate",
-        "tool_function": generate_image_by_recraft_v3_replicate,
-    },
-    "generate_image_by_flux_kontext_pro_replicate": {
-        "display_name": "Flux Kontext Pro",
-        "type": "image",
-        "provider": "replicate",
-        "tool_function": generate_image_by_flux_kontext_pro_replicate,
-    },
-    "generate_image_by_flux_kontext_max_replicate": {
-        "display_name": "Flux Kontext Max",
-        "type": "image",
-        "provider": "replicate",
-        "tool_function": generate_image_by_flux_kontext_max_replicate,
     },
 }
 
