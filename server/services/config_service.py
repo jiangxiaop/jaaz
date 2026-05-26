@@ -38,10 +38,7 @@ DEFAULT_PROVIDERS_CONFIG: AppConfig = {
         'max_tokens': 8192,
     },
     'openai': {
-        'models': {
-            'gpt-4o': {'type': 'text'},
-            'gpt-4o-mini': {'type': 'text'},
-        },
+        'models': {},
         'url': 'https://api.openai.com/v1/',
         'api_key': '',
         'max_tokens': 8192,
