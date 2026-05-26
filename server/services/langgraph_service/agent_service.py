@@ -144,6 +144,10 @@ def _create_text_model(text_model: ModelInfo) -> Any:
     api_key = config_service.app_config.get(  # type: ignore
         provider, {}).get("api_key", "")
 
+    # Log model creation details for debugging
+    masked_key = f"{api_key[:8]}...{api_key[-4:]}" if api_key and len(api_key) > 12 else "***"
+    print(f"🔧 Creating text model: provider={provider}, model={model}, base_url={url}, api_key={masked_key}")
+
     # TODO: Verify if max token is working
     # max_tokens = text_model.get('max_tokens', 8148)
 
@@ -180,6 +184,32 @@ def _create_text_model(text_model: ModelInfo) -> Any:
 async def _handle_error(error: Exception, session_id: str) -> None:
     """处理错误"""
     print('Error in langgraph_agent', error)
+
+    # Log upstream API request details if available
+    if hasattr(error, 'response') and error.response is not None:
+        resp = error.response
+        print(f"🔴 Upstream response status: {resp.status_code}")
+        print(f"🔴 Upstream request URL: {resp.request.url}")
+        print(f"🔴 Upstream request method: {resp.request.method}")
+        # Log request headers (mask api key)
+        req_headers = dict(resp.request.headers)
+        for key in req_headers:
+            if 'key' in key.lower() or 'auth' in key.lower():
+                val = req_headers[key]
+                req_headers[key] = f"{val[:8]}...{val[-4:]}" if len(val) > 12 else "***"
+        print(f"🔴 Upstream request headers: {req_headers}")
+        # Log request body (truncate if too long)
+        if resp.request.content:
+            body = resp.request.content.decode('utf-8', errors='replace')
+            if len(body) > 2000:
+                body = body[:2000] + f"... [truncated, total {len(body)} chars]"
+            print(f"🔴 Upstream request body: {body}")
+        # Log response body
+        try:
+            print(f"🔴 Upstream response body: {resp.text}")
+        except Exception:
+            pass
+
     tb_str = traceback.format_exc()
     print(f"Full traceback:\n{tb_str}")
     traceback.print_exc()
