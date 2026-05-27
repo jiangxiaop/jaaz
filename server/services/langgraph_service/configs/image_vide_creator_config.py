@@ -84,6 +84,11 @@ When image generation fails, you MUST:
 5. Maintain a supportive and professional tone
 
 IMPORTANT: Never ignore tool errors. Always respond to failed tool calls with helpful guidance for the user.
+
+TOOL CALL RULES:
+- Every tool call MUST include ALL required parameters. The "prompt" parameter is ALWAYS required.
+- NEVER make a tool call with empty or missing arguments.
+- When generating multiple images, each tool call must have its own complete "prompt" value.
 """
 
         full_system_prompt = system_prompt + \
