@@ -7,6 +7,7 @@ from tools.utils.image_generation_core import generate_image_with_provider
 
 class GenerateImageByGPTImage2InputSchema(BaseModel):
     prompt: str = Field(
+        default="",
         description="Required. The prompt for image generation. If you want to edit an image, please describe what you want to edit in the prompt."
     )
     aspect_ratio: str = Field(
@@ -24,12 +25,15 @@ class GenerateImageByGPTImage2InputSchema(BaseModel):
       description="Generate or edit an image using OpenAI GPT Image 2 model. Supports text-to-image generation and image editing with input reference images. High-quality image generation with excellent text rendering and photorealistic results.",
       args_schema=GenerateImageByGPTImage2InputSchema)
 async def generate_image_by_gpt_image_2(
-    prompt: str,
     config: RunnableConfig,
     tool_call_id: Annotated[str, InjectedToolCallId],
+    prompt: str = "",
     aspect_ratio: str = "1:1",
     input_images: Optional[list[str]] = None,
 ) -> str:
+    if not prompt or not prompt.strip():
+        return "Error: prompt is required and cannot be empty. Please provide a detailed image description."
+
     ctx = config.get('configurable', {})
     canvas_id = ctx.get('canvas_id', '')
     session_id = ctx.get('session_id', '')
