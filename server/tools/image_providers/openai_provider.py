@@ -68,11 +68,9 @@ class OpenAIImageProvider(ImageProviderBase):
                     "prompt": prompt,
                     "n": kwargs.get("num_images", 1),
                     "size": size,
-                    "stream": True,
-                    "partial_images": 0,
                 }
 
-                return await self._stream_request(
+                return await self._non_stream_request(
                     f"{base_url}/images/generations", headers, payload
                 )
 
@@ -116,6 +114,24 @@ class OpenAIImageProvider(ImageProviderBase):
             raise Exception("No image data returned from OpenAI API")
         image_item = data_list[0]
         return await self._save_image(image_item.get("b64_json"), image_item.get("url"))
+
+    async def _non_stream_request(
+        self, url: str, headers: dict, payload: dict
+    ) -> tuple[str, int, int, str]:
+        """Make a standard (non-streaming) request"""
+        async with httpx.AsyncClient(timeout=300) as client:
+            resp = await client.post(url, headers=headers, json=payload)
+            if resp.status_code != 200:
+                raise Exception(
+                    f"OpenAI API error {resp.status_code}: {resp.text}"
+                )
+            result = resp.json()
+
+        data_list = result.get("data", [])
+        if not data_list:
+            raise Exception("No image data returned from OpenAI API")
+        item = data_list[0]
+        return await self._save_image(item.get("b64_json"), item.get("url"))
 
     async def _stream_request(
         self, url: str, headers: dict, payload: dict
