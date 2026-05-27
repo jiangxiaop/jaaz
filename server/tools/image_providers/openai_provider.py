@@ -131,6 +131,9 @@ class OpenAIImageProvider(ImageProviderBase):
         if not data_list:
             raise Exception("No image data returned from OpenAI API")
         item = data_list[0]
+        has_b64 = bool(item.get("b64_json"))
+        url_preview = (item.get("url") or "")[:80]
+        print(f"🖼️ Response format - has_b64: {has_b64}, url_preview: {url_preview}")
         return await self._save_image(item.get("b64_json"), item.get("url"))
 
     async def _stream_request(
@@ -218,14 +221,22 @@ class OpenAIImageProvider(ImageProviderBase):
     ) -> tuple[str, int, int, str]:
         """Save image from b64 or URL and return metadata"""
         image_id = generate_image_id()
+        save_path = os.path.join(FILES_DIR, f'{image_id}')
+
+        # Handle data URI in url field (e.g. "data:image/png;base64,iVBOR...")
+        if not b64 and url_val and url_val.startswith("data:"):
+            # Extract base64 data from data URI
+            _, b64_part = url_val.split(",", 1)
+            b64 = b64_part
+            url_val = None
 
         if b64:
             mime_type, width, height, extension = await get_image_info_and_save(
-                b64, os.path.join(FILES_DIR, f'{image_id}'), is_b64=True
+                b64, save_path, is_b64=True
             )
         elif url_val:
             mime_type, width, height, extension = await get_image_info_and_save(
-                url_val, os.path.join(FILES_DIR, f'{image_id}')
+                url_val, save_path
             )
         else:
             raise Exception("No image data to save")
