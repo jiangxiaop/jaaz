@@ -25,9 +25,9 @@ class GenerateImageByGPTImage2InputSchema(BaseModel):
       args_schema=GenerateImageByGPTImage2InputSchema)
 async def generate_image_by_gpt_image_2(
     prompt: str,
-    aspect_ratio: str = "1:1",
     config: RunnableConfig,
     tool_call_id: Annotated[str, InjectedToolCallId],
+    aspect_ratio: str = "1:1",
     input_images: Optional[list[str]] = None,
 ) -> str:
     ctx = config.get('configurable', {})
