@@ -10,7 +10,8 @@ class GenerateImageByGPTImage2InputSchema(BaseModel):
         description="Required. The prompt for image generation. If you want to edit an image, please describe what you want to edit in the prompt."
     )
     aspect_ratio: str = Field(
-        description="Required. Aspect ratio of the image, only these values are allowed: 1:1, 16:9, 4:3, 3:4, 9:16. Choose the best fitting aspect ratio according to the prompt. Best ratio for posters is 3:4"
+        default="1:1",
+        description="Aspect ratio of the image, only these values are allowed: 1:1, 16:9, 4:3, 3:4, 9:16. Choose the best fitting aspect ratio according to the prompt. Best ratio for posters is 3:4. Defaults to 1:1."
     )
     input_images: Optional[list[str]] = Field(
         default=None,
@@ -24,7 +25,7 @@ class GenerateImageByGPTImage2InputSchema(BaseModel):
       args_schema=GenerateImageByGPTImage2InputSchema)
 async def generate_image_by_gpt_image_2(
     prompt: str,
-    aspect_ratio: str,
+    aspect_ratio: str = "1:1",
     config: RunnableConfig,
     tool_call_id: Annotated[str, InjectedToolCallId],
     input_images: Optional[list[str]] = None,
